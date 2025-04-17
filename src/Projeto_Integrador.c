@@ -17,7 +17,7 @@
 //LEDS
 #define LED_PIN_RED 13    
 #define LED_PIN_BLUE 12        
-#define LED_PIN_GREEN 11  
+
 //Joystick     
 #define JOYSTICK_PIN_X 26      
 #define JOYSTICK_PIN_Y 27      
@@ -30,7 +30,6 @@
 static volatile uint32_t last_interrupt_time_joystick = 0;  
 static volatile uint32_t last_interrupt_time_A = 0;     
 bool leds_ligados = true;       
-bool led_verde_ligado = false;  
 
 // Função LED(PWM) - JOYSTICK
 uint16_t calcular_brilho_led(uint16_t valor_joystick) {
@@ -42,7 +41,7 @@ uint16_t calcular_brilho_led(uint16_t valor_joystick) {
     uint32_t diff = valor_joystick > CENTRO_JOYSTICK ? valor_joystick - CENTRO_JOYSTICK : CENTRO_JOYSTICK - valor_joystick;
     uint32_t alcance = valor_joystick > CENTRO_JOYSTICK ? 4095 - CENTRO_JOYSTICK : CENTRO_JOYSTICK;
                       
-    return (diff * 255) / alcance; //Garante que o LED aumente nas extremidades
+    return (diff * 255) / alcance; 
 }
 
 // Função de interrupção dos botões
@@ -75,7 +74,7 @@ static void buttons_callback(uint gpio, uint32_t events) {
 
 void setup() {
     stdio_init_all();
-    sleep_ms(2000); // Tempo para o terminal serial iniciar
+    sleep_ms(2000); 
     
     printf("\n\n=== Inicializando o Projeto ===\n");
     
@@ -92,12 +91,6 @@ void setup() {
     adc_gpio_init(JOYSTICK_PIN_X);
     adc_gpio_init(JOYSTICK_PIN_Y);
     printf("ADC inicializado\n");
-    
-    // Inicializa os LEDs
-    gpio_init(LED_PIN_GREEN);
-    gpio_set_dir(LED_PIN_GREEN, GPIO_OUT);
-    gpio_put(LED_PIN_GREEN, 0);
-    printf("LED verde inicializado\n");
 
     // Inicializa o buzzer
     buzzer_init(21); 
@@ -106,7 +99,6 @@ void setup() {
     // Iniciar matriz de LEDs
     printf("Inicializando matriz de LEDs...\n");
     iniciar_matriz_leds(pio0, 0, led_matrix_pin);
-    // NÃO exibir o coração agora - esperar pelo botão A
     matriz_exibir_padrao(PADRAO_NENHUM);
     
     // Configura os LEDs PWM 
@@ -124,13 +116,10 @@ void setup() {
     printf("LEDs PWM inicializados\n");
     
     // Inicializa os botões
-    gpio_init(JOYSTICK_PIN_BTN);
     gpio_init(BUTTON_PIN_A);
     gpio_init(BUTTON_PIN_B);
-    gpio_set_dir(JOYSTICK_PIN_BTN, GPIO_IN);
     gpio_set_dir(BUTTON_PIN_A, GPIO_IN);
     gpio_set_dir(BUTTON_PIN_B, GPIO_IN);
-    gpio_pull_up(JOYSTICK_PIN_BTN);
     gpio_pull_up(BUTTON_PIN_A);
     gpio_pull_up(BUTTON_PIN_B);
     printf("Botões inicializados\n");

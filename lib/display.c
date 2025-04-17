@@ -18,21 +18,25 @@ void verificar_borda(int x, int y) {
     }
     // Usar condições exatas para as bordas
     if (x == 0 && ultima_borda != BORDA_ESQUERDA) {
+        estilo_borda = !estilo_borda;
         printf("DETECTADO: Tocou na borda esquerda\n");
         ultima_borda = BORDA_ESQUERDA;
         matriz_exibir_padrao(PADRAO_RAIO_1);
         som_borda_esquerda();
     } else if (x == WIDTH - TAMANHO_QUADRADO && ultima_borda != BORDA_DIREITA) {
+        estilo_borda = !estilo_borda;
         printf("DETECTADO: Tocou na borda direita\n");
         ultima_borda = BORDA_DIREITA;
         matriz_exibir_padrao(PADRAO_RAIO_2);
         som_borda_direita();
     } else if (y == 0 && ultima_borda != BORDA_CIMA) {
+        estilo_borda = !estilo_borda;
         printf("DETECTADO: Tocou na borda superior\n");
         ultima_borda = BORDA_CIMA;
         matriz_exibir_padrao(PADRAO_RAIO_3);
         som_borda_cima();
     } else if (y == HEIGHT - TAMANHO_QUADRADO && ultima_borda != BORDA_BAIXO) {
+        estilo_borda = !estilo_borda;
         printf("DETECTADO: Tocou na borda inferior\n");
         ultima_borda = BORDA_BAIXO;
         matriz_exibir_padrao(PADRAO_RAIO_4);
