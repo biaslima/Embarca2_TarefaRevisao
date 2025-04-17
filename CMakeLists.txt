@@ -35,13 +35,19 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(Projeto_Integrador Projeto_Integrador.c lib/ssd1306.c )
+add_executable(Projeto_Integrador 
+src/Projeto_Integrador.c 
+lib/ssd1306.c 
+lib/buzzer.c
+lib/display.c 
+lib/matriz_leds.c
+)
 
 pico_set_program_name(Projeto_Integrador "Projeto_Integrador")
 pico_set_program_version(Projeto_Integrador "0.1")
 
 # Generate PIO header
-pico_generate_pio_header(Projeto_Integrador ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
+pico_generate_pio_header(Projeto_Integrador ${CMAKE_CURRENT_LIST_DIR}/pio/ws2812.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(Projeto_Integrador 0)
