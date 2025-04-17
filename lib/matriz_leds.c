@@ -5,6 +5,7 @@
 uint32_t leds[NUM_LEDS];
 PIO pio = pio0;
 int sm = 0;
+uint8_t coracao_cor = 0;
 
 // Padrões pra matriz
 const uint8_t padrao_coracao[5][5] = {
@@ -104,6 +105,23 @@ void matriz_exibir_coracao_rosa() {
     update_leds(pio, sm);
 }
 
+void matriz_exibir_coracao_azul() {
+    printf("Exibindo padrão: CORAÇÃO AZUL\n");
+    clear_matrix(pio, sm);
+    
+    uint32_t cor_coracao = create_color(10, 0, 40); // Cor azul
+    
+    for (uint8_t y = 0; y < 5; y++) {
+        for (uint8_t x = 0; x < 5; x++) {
+            if (padrao_coracao[y][x]) {
+                leds[matriz_posicao_xy(x, y)] = cor_coracao;
+            }
+        }
+    }
+    
+    update_leds(pio, sm);
+}
+
 void matriz_exibir_raio1() {
     printf("Exibindo padrão: RAIO\n");
     clear_matrix(pio, sm);
@@ -176,39 +194,44 @@ void matriz_exibir_padrao(uint8_t padrao) {
     
     switch (padrao) {
         case PADRAO_CORACAO:
-            printf("Exibindo CORAÇÃO\n");
+            printf("Exibindo CORAÇÃO VERDE\n");
             matriz_exibir_coracao();
             break;
 
         case PADRAO_CORACAO_ROSA:
-        printf("Exibindo CORAÇÃO\n");
-        matriz_exibir_coracao_rosa();
-        break;
+            printf("Exibindo CORAÇÃO ROSA\n");
+            matriz_exibir_coracao_rosa();
+            break;
+            
+        case PADRAO_CORACAO_AZUL:
+            printf("Exibindo CORAÇÃO AZUL\n");
+            matriz_exibir_coracao_azul();
+            break;
                 
         case PADRAO_RAIO_1:
-        printf("Exibindo RAIO\n");
-        matriz_exibir_raio1();
-        break;
+            printf("Exibindo RAIO 1\n");
+            matriz_exibir_raio1();
+            break;
          
         case PADRAO_RAIO_2:
-        printf("Exibindo RAIO\n");
-        matriz_exibir_raio2();
-        break;
+            printf("Exibindo RAIO 2\n");
+            matriz_exibir_raio2();
+            break;
 
         case PADRAO_RAIO_3:
-        printf("Exibindo RAIO\n");
-        matriz_exibir_raio3();
-        break;
+            printf("Exibindo RAIO 3\n");
+            matriz_exibir_raio3();
+            break;
             
         case PADRAO_RAIO_4:
-        printf("Exibindo RAIO\n");
-        matriz_exibir_raio4();
-        break;
+            printf("Exibindo RAIO 4\n");
+            matriz_exibir_raio4();
+            break;
         
         case PADRAO_NENHUM:
         default:
-        printf("Limpando matriz\n");
-        update_leds(pio, sm);
-        break;
+            printf("Limpando matriz\n");
+            update_leds(pio, sm);
+            break;
     }
 }

@@ -27,8 +27,10 @@
 
 // Variáveis globais
 static volatile uint32_t last_interrupt_time_joystick = 0;  
-static volatile uint32_t last_interrupt_time_A = 0;     
-bool leds_ligados = true;       
+static volatile uint32_t last_interrupt_time_A = 0;      
+bool leds_ligados = true;    
+
+
 
 // Função LED(PWM) - JOYSTICK
 uint16_t calcular_brilho_led(uint16_t valor_joystick) {
@@ -47,19 +49,8 @@ uint16_t calcular_brilho_led(uint16_t valor_joystick) {
 static void buttons_callback(uint gpio, uint32_t events) {
     uint32_t current_time = to_us_since_boot(get_absolute_time());
     
-    
-    if (gpio == BUTTON_PIN_B && current_time - last_interrupt_time_joystick > 200000) {
-        last_interrupt_time_joystick = current_time;
-        estilo_borda = !estilo_borda;
-        printf("Estilo de borda alterado: %s\n", estilo_borda ? "Pontilhado" : "Contínuo");
-        if (leds_ligados) {
-            matriz_exibir_padrao(PADRAO_CORACAO_ROSA);
-        } else {
-            matriz_exibir_padrao(PADRAO_NENHUM);
-        }
-    }
-    
-    else if (gpio == BUTTON_PIN_A && current_time - last_interrupt_time_A > 200000) {
+    // Botão A - Liga/desliga os LEDs da matriz
+    if (gpio == BUTTON_PIN_A && current_time - last_interrupt_time_A > 200000) {
         last_interrupt_time_A = current_time;
         leds_ligados = !leds_ligados;
         printf("LEDs %s\n", leds_ligados ? "ligados" : "desligados");
@@ -67,6 +58,31 @@ static void buttons_callback(uint gpio, uint32_t events) {
             matriz_exibir_padrao(PADRAO_CORACAO);
         } else {
             matriz_exibir_padrao(PADRAO_NENHUM);
+        }
+    }
+    
+    // Botão B - Muda a cor do coração (apenas quando os LEDs estão ligados)
+    else if (gpio == BUTTON_PIN_B && current_time - last_interrupt_time_joystick > 200000) {
+        last_interrupt_time_joystick = current_time;
+        if (leds_ligados) {
+            coracao_cor = (coracao_cor + 1) % NUM_CORES_CORACAO;
+            printf("Cor do coração alterada para %d\n", coracao_cor);
+            
+            // Exibe o coração com a nova cor
+            switch (coracao_cor) {
+                case 0:
+                    matriz_exibir_padrao(PADRAO_CORACAO);
+                    break;
+                case 1:
+                    matriz_exibir_padrao(PADRAO_CORACAO_ROSA);
+                    break;
+                case 2:
+                    matriz_exibir_padrao(PADRAO_CORACAO_AZUL);
+                    break;
+                default:
+                    matriz_exibir_padrao(PADRAO_CORACAO);
+                    break;
+            }
         }
     }
 }
@@ -98,7 +114,8 @@ void setup() {
     // Iniciar matriz de LEDs
     printf("Inicializando matriz de LEDs...\n");
     iniciar_matriz_leds(pio0, 0, led_matrix_pin);
-    matriz_exibir_padrao(PADRAO_NENHUM);
+    matriz_exibir_padrao(PADRAO_NENHUM);  
+    leds_ligados = false;
     
     // Configura os LEDs PWM 
     gpio_set_function(LED_PIN_RED, GPIO_FUNC_PWM);

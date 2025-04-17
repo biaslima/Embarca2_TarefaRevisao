@@ -12,15 +12,19 @@
 #define NUM_LEDS 25
 #define IS_RGBW false
 #define led_matrix_pin 7
+#define NUM_CORES_CORACAO 3
+extern uint8_t coracao_cor;
 
 // Padrões de exibição
 #define PADRAO_NENHUM 0
 #define PADRAO_CORACAO 1
+#define PADRAO_CORACAO_AZUL 7
+#define PADRAO_CORACAO_ROSA 6
 #define PADRAO_RAIO_1 2
 #define PADRAO_RAIO_2 3
 #define PADRAO_RAIO_3 4
 #define PADRAO_RAIO_4 5
-#define PADRAO_CORACAO_ROSA 6
+
 
 // Declaração de variáveis externas
 extern uint32_t leds[NUM_LEDS];

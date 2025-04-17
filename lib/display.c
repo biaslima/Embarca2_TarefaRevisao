@@ -11,12 +11,18 @@ int posicao_y_alvo = 0;
 ssd1306_t display;
 static uint32_t ultima_deteccao_borda = 0;
 
+
 void verificar_borda(int x, int y) {
     uint32_t tempo_atual = to_us_since_boot(get_absolute_time());
     if (tempo_atual - ultima_deteccao_borda < 200000) {
         return;
     }
    
+    // Verifica se os LEDs estão ligados antes de exibir qualquer padrão
+    if (!leds_ligados) {
+        return;  // Não faz nada se os LEDs estiverem desligados
+    }
+
     if (x == 0 && ultima_borda != BORDA_ESQUERDA) {
         estilo_borda = !estilo_borda;
         printf("DETECTADO: Tocou na borda esquerda\n");
@@ -44,7 +50,22 @@ void verificar_borda(int x, int y) {
     } else if (x > 5 && x < WIDTH - TAMANHO_QUADRADO - 5 && y > 5 && y < HEIGHT - TAMANHO_QUADRADO - 5 && ultima_borda != BORDA_NENHUMA) {
         printf("DETECTADO: Saiu de todas as bordas\n");
         ultima_borda = BORDA_NENHUMA;
-        matriz_exibir_padrao(PADRAO_CORACAO);
+        
+        // Quando sair da borda, voltar para o coração com a cor atual
+        switch (coracao_cor) {
+            case 0:
+                matriz_exibir_padrao(PADRAO_CORACAO);
+                break;
+            case 1:
+                matriz_exibir_padrao(PADRAO_CORACAO_ROSA);
+                break;
+            case 2:
+                matriz_exibir_padrao(PADRAO_CORACAO_AZUL);
+                break;
+            default:
+                matriz_exibir_padrao(PADRAO_CORACAO);
+                break;
+        }
     }
     if (ultima_borda != BORDA_NENHUMA) {
         ultima_deteccao_borda = tempo_atual;

@@ -21,7 +21,9 @@ extern int posicao_y_atual;
 extern int posicao_x_alvo;      
 extern int posicao_y_alvo;  
 extern bool estilo_borda; 
-extern ssd1306_t display;             
+extern ssd1306_t display;    
+extern bool leds_ligados;
+extern uint8_t coracao_cor;  
 
 //CONSTANTES IMPORTANTES
 #define TAMANHO_QUADRADO 8      
