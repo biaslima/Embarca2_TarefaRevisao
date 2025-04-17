@@ -42,7 +42,7 @@ Assista ao vídeo de funcionamento aqui: [YouTube/Drive](https://drive.google.co
 │   ├── buzzer.c
 │   ├── buzzer.h                 ← Funções para os sons personalizados
 ├── src/
-│   └── main.c                   ← Lógica principal (movimento, bordas, interação)
+│   └── Projeto_Integrador.c                   ← Lógica principal (movimento, bordas, interação)
 ├── README.md
 ```
 
