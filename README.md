@@ -30,19 +30,21 @@ Criar um sistema interativo com joystick, display, matriz de LEDs e buzzer, onde
 Assista ao vídeo de funcionamento aqui: [YouTube/Drive](https://drive.google.com/file/d/SEU_VIDEO_ID/view)
 
 ## 📁 Organização
+```
 ├── CMakeLists.txt
 ├── pio/
-│   └── ws2812.pio               # Código PIO para controle da matriz de LEDs WS2812
+│   └── ws2812.pio               ← Código PIO para a matriz WS2812
 ├── lib/
-│   ├── display.c                # Funções auxiliares para o display SSD1306
-│   ├── display.h
-│   ├── matriz_leds.c            # Controle da matriz de LEDs (desenhos e cores)
-│   ├── matriz_leds.h
-│   ├── buzzer.c                 # Sons específicos para cada borda
-│   ├── buzzer.h
+│   ├── display.c
+│   ├── display.h                ← Controle do display OLED
+│   ├── matriz_leds.c
+│   ├── matriz_leds.h            ← Funções para desenhos e cores na matriz de LEDs
+│   ├── buzzer.c
+│   ├── buzzer.h                 ← Funções para os sons personalizados
 ├── src/
-│   └── main.c                   # Código principal do sistema
+│   └── main.c                   ← Lógica principal (movimento, bordas, interação)
 ├── README.md
+```
 
 ## 👩‍💻 Autora
 **Anna Beatriz Silva Lima**  
