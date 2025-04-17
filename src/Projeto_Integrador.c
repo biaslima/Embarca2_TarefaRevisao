@@ -49,21 +49,22 @@ uint16_t calcular_brilho_led(uint16_t valor_joystick) {
 static void buttons_callback(uint gpio, uint32_t events) {
     uint32_t current_time = to_us_since_boot(get_absolute_time());
     
-    // Callback do JOYSTICK
-    if (gpio == JOYSTICK_PIN_BTN && current_time - last_interrupt_time_joystick > 200000) {
+    
+    if (gpio == BUTTON_PIN_B && current_time - last_interrupt_time_joystick > 200000) {
         last_interrupt_time_joystick = current_time;
-        led_verde_ligado = !led_verde_ligado;
-        gpio_put(LED_PIN_GREEN, led_verde_ligado);
         estilo_borda = !estilo_borda;
         printf("Estilo de borda alterado: %s\n", estilo_borda ? "Pontilhado" : "Contínuo");
+        if (leds_ligados) {
+            matriz_exibir_padrao(PADRAO_CORACAO_ROSA);
+        } else {
+            matriz_exibir_padrao(PADRAO_NENHUM);
+        }
     }
-    // Callback botão A
+    
     else if (gpio == BUTTON_PIN_A && current_time - last_interrupt_time_A > 200000) {
         last_interrupt_time_A = current_time;
         leds_ligados = !leds_ligados;
         printf("LEDs %s\n", leds_ligados ? "ligados" : "desligados");
-        
-        // Mostrar o coração quando o botão A é pressionado
         if (leds_ligados) {
             matriz_exibir_padrao(PADRAO_CORACAO);
         } else {
@@ -99,7 +100,7 @@ void setup() {
     printf("LED verde inicializado\n");
 
     // Inicializa o buzzer
-    buzzer_init(28); 
+    buzzer_init(21); 
     printf("Buzzer inicializado\n");
     
     // Iniciar matriz de LEDs
@@ -135,9 +136,8 @@ void setup() {
     printf("Botões inicializados\n");
     
     // Configura as interrupções 
-    gpio_set_irq_enabled_with_callback(JOYSTICK_PIN_BTN, GPIO_IRQ_EDGE_FALL, true, buttons_callback);
+    gpio_set_irq_enabled_with_callback(BUTTON_PIN_B, GPIO_IRQ_EDGE_FALL, true, buttons_callback);
     gpio_set_irq_enabled(BUTTON_PIN_A, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(BUTTON_PIN_B, GPIO_IRQ_EDGE_FALL, true);
     printf("Interrupções configuradas\n");
     
     // Inicializa o display
@@ -155,19 +155,18 @@ void setup() {
 
 int main() {
     setup();
-    sleep_ms(500);  // Pequena pausa para estabilização
+    sleep_ms(500);  
     
     printf("Iniciando loop principal\n");
     
     // Loop principal
     while (true) {
-        // Desenha a borda
         desenhar_borda(estilo_borda);
         
         // Lê os valores do joystick
-        adc_select_input(0);  // Canal 0 para X
+        adc_select_input(0);  
         uint16_t valor_x = adc_read();
-        adc_select_input(1);  // Canal 1 para Y
+        adc_select_input(1);  
         uint16_t valor_y = adc_read();
         
         // Log dos valores do joystick (apenas ocasionalmente para não sobrecarregar)
@@ -178,7 +177,6 @@ int main() {
         }
         
         // Atualiza as posições alvo do quadrado
-        // CORREÇÃO: Trocando X e Y para corrigir a inversão
         if (abs(valor_y - CENTRO_JOYSTICK) < ZONA_MORTA) {
             posicao_x_alvo = WIDTH / 2 - TAMANHO_QUADRADO / 2;  // Centraliza se joystick parado
         } else {
@@ -186,7 +184,7 @@ int main() {
         }
 
         if (abs(valor_x - CENTRO_JOYSTICK) < ZONA_MORTA) {
-            posicao_y_alvo = HEIGHT / 2 - TAMANHO_QUADRADO / 2;  // Centraliza se joystick parado
+            posicao_y_alvo = HEIGHT / 2 - TAMANHO_QUADRADO / 2;  
         } else {
             posicao_y_alvo = converter_posicao_display(valor_x, HEIGHT);
         }

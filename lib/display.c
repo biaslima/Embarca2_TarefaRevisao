@@ -16,36 +16,32 @@ void verificar_borda(int x, int y) {
     if (tempo_atual - ultima_deteccao_borda < 200000) {
         return;
     }
-    // Adicionar log detalhado para depuração
-    printf("Posição do quadrado: x=%d, y=%d, WIDTH=%d, HEIGHT=%d, TAMANHO=%d\n", 
-               x, y, WIDTH, HEIGHT, TAMANHO_QUADRADO);
-        
-    // Correção das condições de borda
-    if (x <= 1 && ultima_borda != BORDA_ESQUERDA) {  // Ajustado para 1 em vez de 0
+    // Usar condições exatas para as bordas
+    if (x == 0 && ultima_borda != BORDA_ESQUERDA) {
         printf("DETECTADO: Tocou na borda esquerda\n");
-         ultima_borda = BORDA_ESQUERDA;
-        matriz_exibir_padrao(PADRAO_RAIO);
+        ultima_borda = BORDA_ESQUERDA;
+        matriz_exibir_padrao(PADRAO_RAIO_1);
         som_borda_esquerda();
-    } else if (x >= WIDTH - TAMANHO_QUADRADO - 1 && ultima_borda != BORDA_DIREITA) {  // Ajustado -1
+    } else if (x == WIDTH - TAMANHO_QUADRADO && ultima_borda != BORDA_DIREITA) {
         printf("DETECTADO: Tocou na borda direita\n");
         ultima_borda = BORDA_DIREITA;
-        matriz_exibir_padrao(PADRAO_RAIO);
+        matriz_exibir_padrao(PADRAO_RAIO_2);
         som_borda_direita();
-    } else if (y <= 1 && ultima_borda != BORDA_CIMA) {  // Ajustado para 1 em vez de 0
+    } else if (y == 0 && ultima_borda != BORDA_CIMA) {
         printf("DETECTADO: Tocou na borda superior\n");
-         ultima_borda = BORDA_CIMA;
-        matriz_exibir_padrao(PADRAO_RAIO);
-         som_borda_cima();
-    } else if (y >= HEIGHT - TAMANHO_QUADRADO - 1 && ultima_borda != BORDA_BAIXO) {  // Ajustado -1
+        ultima_borda = BORDA_CIMA;
+        matriz_exibir_padrao(PADRAO_RAIO_3);
+        som_borda_cima();
+    } else if (y == HEIGHT - TAMANHO_QUADRADO && ultima_borda != BORDA_BAIXO) {
         printf("DETECTADO: Tocou na borda inferior\n");
         ultima_borda = BORDA_BAIXO;
-        matriz_exibir_padrao(PADRAO_RAIO);
+        matriz_exibir_padrao(PADRAO_RAIO_4);
         som_borda_baixo();
     } else if (x > 5 && x < WIDTH - TAMANHO_QUADRADO - 5 && y > 5 && y < HEIGHT - TAMANHO_QUADRADO - 5 && ultima_borda != BORDA_NENHUMA) {
-         // Adicionei uma margem maior para retornar ao estado normal
-         printf("DETECTADO: Saiu de todas as bordas\n");
+        // Adicionei uma margem maior para retornar ao estado normal
+        printf("DETECTADO: Saiu de todas as bordas\n");
         ultima_borda = BORDA_NENHUMA;
-         matriz_exibir_padrao(PADRAO_CORACAO);
+        matriz_exibir_padrao(PADRAO_CORACAO);
     }
     if (ultima_borda != BORDA_NENHUMA) {
         ultima_deteccao_borda = tempo_atual;
@@ -58,7 +54,16 @@ int movimento_suave(int posicao_atual, int posicao_alvo) {
     if (posicao_atual == posicao_alvo) {
         return posicao_atual;
     }
-    return posicao_atual + ((posicao_alvo - posicao_atual) / 5); //Move o quadrado de 30 em 30% para a posição alvo
+    
+    // Se estiver muito próximo do alvo ou se o alvo for uma borda, mova diretamente para ele
+    if (abs(posicao_alvo - posicao_atual) <= 2 || 
+        posicao_alvo == 0 || 
+        posicao_alvo == WIDTH - TAMANHO_QUADRADO || 
+        posicao_alvo == HEIGHT - TAMANHO_QUADRADO) {
+        return posicao_alvo;
+    }
+    
+    return posicao_atual + ((posicao_alvo - posicao_atual) / 4); // 25% de movimento para cada frame
 }
 
 // Função para desenhar borda
@@ -80,20 +85,25 @@ void desenhar_borda(bool estilo_pontilhado) {
 
 // Função que converte a posição do joystick para a posição na tela
 int converter_posicao_display(int valor_joystick, int tamanho_tela) {
-    // Inversão do eixo Y para corresponder ao comportamento esperado do joystick
-    if (tamanho_tela == HEIGHT) {
+     // Inversão do eixo Y para corresponder ao comportamento esperado do joystick
+     if (tamanho_tela == HEIGHT) {
         valor_joystick = 4095 - valor_joystick;
     }
     
-    int posicao_centro = tamanho_tela / 2 - TAMANHO_QUADRADO / 2;
-    int alcance = (tamanho_tela - TAMANHO_QUADRADO) / 2;
+    // Garantir que o valor esteja dentro dos limites do ADC
+    if (valor_joystick < 0) valor_joystick = 0;
+    if (valor_joystick > 4095) valor_joystick = 4095;
     
-    int posicao = posicao_centro + ((long)(valor_joystick - CENTRO_JOYSTICK) * alcance) / CENTRO_JOYSTICK;
+    // Ajustar para garantir que valores extremos alcancem as bordas
+    if (valor_joystick <= 50) return 0;
+    if (valor_joystick >= 4045) return tamanho_tela - TAMANHO_QUADRADO;
     
-    // Garante que o quadrado só se mova na tela
-    if (posicao < 0) 
-        return 0;
-    if (posicao > tamanho_tela - TAMANHO_QUADRADO) 
-        return tamanho_tela - TAMANHO_QUADRADO;
+    // Reduzir um pouco a zona morta para melhorar a resposta
+    long alcance_entrada = 4095;
+    long alcance_saida = tamanho_tela - TAMANHO_QUADRADO;
+    
+    // Calcular a posição com escala completa
+    int posicao = (valor_joystick * alcance_saida) / alcance_entrada;
+    
     return posicao;
 }

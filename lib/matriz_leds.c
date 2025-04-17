@@ -17,11 +17,11 @@ const uint8_t padrao_coracao[5][5] = {
 };
 
 const uint8_t padrao_raio[5][5] = {
+    {0, 0, 0, 1, 0},
     {0, 0, 1, 0, 0},
-    {0, 1, 1, 0, 0},
+    {0, 1, 1, 1, 0},
     {0, 0, 1, 0, 0},
-    {0, 0, 1, 0, 0},
-    {0, 0, 1, 0, 0}
+    {0, 1, 0, 0, 0}
 };
 
 void iniciar_matriz_leds(PIO pio_inst, uint sm_num, uint pin) {
@@ -82,8 +82,23 @@ void matriz_exibir_coracao() {
     printf("Exibindo padrão: CORAÇÃO\n");
     clear_matrix(pio, sm);
     
-    // Cor vermelha para o coração
-    uint32_t cor_coracao = create_color(0, 150, 0); // Ajuste (GRB)
+    uint32_t cor_coracao = create_color(0, 80, 0); 
+    
+    for (uint8_t y = 0; y < 5; y++) {
+        for (uint8_t x = 0; x < 5; x++) {
+            if (padrao_coracao[y][x]) {
+                leds[matriz_posicao_xy(x, y)] = cor_coracao;
+            }
+        }
+    }
+    
+    update_leds(pio, sm);
+}
+void matriz_exibir_coracao_rosa() {
+    printf("Exibindo padrão: CORAÇÃO\n");
+    clear_matrix(pio, sm);
+    
+    uint32_t cor_coracao = create_color(0, 60, 20); 
     
     for (uint8_t y = 0; y < 5; y++) {
         for (uint8_t x = 0; x < 5; x++) {
@@ -96,12 +111,59 @@ void matriz_exibir_coracao() {
     update_leds(pio, sm);
 }
 
-void matriz_exibir_raio() {
+void matriz_exibir_raio1() {
     printf("Exibindo padrão: RAIO\n");
     clear_matrix(pio, sm);
     
-    // Cor amarela para o raio
-    uint32_t cor_raio = create_color(120, 150, 0); // Ajuste (GRB)
+    uint32_t cor_raio = create_color(60, 75, 0); 
+    
+    for (uint8_t y = 0; y < 5; y++) {
+        for (uint8_t x = 0; x < 5; x++) {
+            if (padrao_raio[y][x]) {
+                leds[matriz_posicao_xy(x, y)] = cor_raio;
+            }
+        }
+    }
+    
+    update_leds(pio, sm);
+}
+void matriz_exibir_raio2() {
+    printf("Exibindo padrão: RAIO\n");
+    clear_matrix(pio, sm);
+    
+    uint32_t cor_raio = create_color(90, 30, 0); 
+    
+    for (uint8_t y = 0; y < 5; y++) {
+        for (uint8_t x = 0; x < 5; x++) {
+            if (padrao_raio[y][x]) {
+                leds[matriz_posicao_xy(x, y)] = cor_raio;
+            }
+        }
+    }
+    
+    update_leds(pio, sm);
+}
+void matriz_exibir_raio3() {
+    printf("Exibindo padrão: RAIO\n");
+    clear_matrix(pio, sm);
+    
+    uint32_t cor_raio = create_color(40, 75, 30); 
+    
+    for (uint8_t y = 0; y < 5; y++) {
+        for (uint8_t x = 0; x < 5; x++) {
+            if (padrao_raio[y][x]) {
+                leds[matriz_posicao_xy(x, y)] = cor_raio;
+            }
+        }
+    }
+    
+    update_leds(pio, sm);
+}
+void matriz_exibir_raio4() {
+    printf("Exibindo padrão: RAIO\n");
+    clear_matrix(pio, sm);
+    
+    uint32_t cor_raio = create_color(60, 50, 20); 
     
     for (uint8_t y = 0; y < 5; y++) {
         for (uint8_t x = 0; x < 5; x++) {
@@ -117,7 +179,6 @@ void matriz_exibir_raio() {
 void matriz_exibir_padrao(uint8_t padrao) {
     printf("Chamando exibir padrão: %d\n", padrao);
     
-    // Forçar a limpeza da matriz antes de exibir um novo padrão
     clear_matrix(pio, sm);
     
     switch (padrao) {
@@ -125,16 +186,36 @@ void matriz_exibir_padrao(uint8_t padrao) {
             printf("Exibindo CORAÇÃO\n");
             matriz_exibir_coracao();
             break;
+
+        case PADRAO_CORACAO_ROSA:
+        printf("Exibindo CORAÇÃO\n");
+        matriz_exibir_coracao_rosa();
+        break;
+                
+        case PADRAO_RAIO_1:
+        printf("Exibindo RAIO\n");
+        matriz_exibir_raio1();
+        break;
+         
+        case PADRAO_RAIO_2:
+        printf("Exibindo RAIO\n");
+        matriz_exibir_raio2();
+        break;
+
+        case PADRAO_RAIO_3:
+        printf("Exibindo RAIO\n");
+        matriz_exibir_raio3();
+        break;
             
-        case PADRAO_RAIO:
-            printf("Exibindo RAIO\n");
-            matriz_exibir_raio();
-            break;
-            
+        case PADRAO_RAIO_4:
+        printf("Exibindo RAIO\n");
+        matriz_exibir_raio4();
+        break;
+        
         case PADRAO_NENHUM:
         default:
-            printf("Limpando matriz\n");
-            update_leds(pio, sm);
-            break;
+        printf("Limpando matriz\n");
+        update_leds(pio, sm);
+        break;
     }
 }
