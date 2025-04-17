@@ -1,41 +1,67 @@
 #include "display.h"
+#include "buzzer.h"
+#include "matriz_leds.h"
+
+TipoBorda ultima_borda = BORDA_NENHUMA;
+bool estilo_borda = false; 
+int posicao_x_atual = 0;     
+int posicao_y_atual = 0;     
+int posicao_x_alvo = 0;      
+int posicao_y_alvo = 0;
+ssd1306_t display;
+static uint32_t ultima_deteccao_borda = 0;
 
 void verificar_borda(int x, int y) {
-    if (x == 0 && ultima_borda != BORDA_ESQUERDA) {
-        ultima_borda = BORDA_ESQUERDA;
-        matriz_exibir_raio();
+    uint32_t tempo_atual = to_us_since_boot(get_absolute_time());
+    if (tempo_atual - ultima_deteccao_borda < 200000) {
+        return;
+    }
+    // Adicionar log detalhado para depuração
+    printf("Posição do quadrado: x=%d, y=%d, WIDTH=%d, HEIGHT=%d, TAMANHO=%d\n", 
+               x, y, WIDTH, HEIGHT, TAMANHO_QUADRADO);
+        
+    // Correção das condições de borda
+    if (x <= 1 && ultima_borda != BORDA_ESQUERDA) {  // Ajustado para 1 em vez de 0
+        printf("DETECTADO: Tocou na borda esquerda\n");
+         ultima_borda = BORDA_ESQUERDA;
+        matriz_exibir_padrao(PADRAO_RAIO);
         som_borda_esquerda();
-    } else if (x == WIDTH - TAMANHO_QUADRADO && ultima_borda != BORDA_DIREITA) {
+    } else if (x >= WIDTH - TAMANHO_QUADRADO - 1 && ultima_borda != BORDA_DIREITA) {  // Ajustado -1
+        printf("DETECTADO: Tocou na borda direita\n");
         ultima_borda = BORDA_DIREITA;
-        matriz_exibir_raio();
+        matriz_exibir_padrao(PADRAO_RAIO);
         som_borda_direita();
-    } else if (y == 0 && ultima_borda != BORDA_CIMA) {
-        ultima_borda = BORDA_CIMA;
-        matriz_exibir_raio();
-        som_borda_cima();
-    } else if (y == HEIGHT - TAMANHO_QUADRADO && ultima_borda != BORDA_BAIXO) {
+    } else if (y <= 1 && ultima_borda != BORDA_CIMA) {  // Ajustado para 1 em vez de 0
+        printf("DETECTADO: Tocou na borda superior\n");
+         ultima_borda = BORDA_CIMA;
+        matriz_exibir_padrao(PADRAO_RAIO);
+         som_borda_cima();
+    } else if (y >= HEIGHT - TAMANHO_QUADRADO - 1 && ultima_borda != BORDA_BAIXO) {  // Ajustado -1
+        printf("DETECTADO: Tocou na borda inferior\n");
         ultima_borda = BORDA_BAIXO;
-        matriz_exibir_raio();
+        matriz_exibir_padrao(PADRAO_RAIO);
         som_borda_baixo();
-    } else if (
-        x > 0 && x < WIDTH - TAMANHO_QUADRADO &&
-        y > 0 && y < HEIGHT - TAMANHO_QUADRADO &&
-        ultima_borda != BORDA_NENHUMA
-    ) {
+    } else if (x > 5 && x < WIDTH - TAMANHO_QUADRADO - 5 && y > 5 && y < HEIGHT - TAMANHO_QUADRADO - 5 && ultima_borda != BORDA_NENHUMA) {
+         // Adicionei uma margem maior para retornar ao estado normal
+         printf("DETECTADO: Saiu de todas as bordas\n");
         ultima_borda = BORDA_NENHUMA;
-        matriz_exibir_coracao();
+         matriz_exibir_padrao(PADRAO_CORACAO);
+    }
+    if (ultima_borda != BORDA_NENHUMA) {
+        ultima_deteccao_borda = tempo_atual;
     }
 }
 
-// Função pra suavisar o movimento do quadradp
+
+// Função para suavisar o movimento do quadrado
 int movimento_suave(int posicao_atual, int posicao_alvo) {
     if (posicao_atual == posicao_alvo) {
         return posicao_atual;
     }
-    return posicao_atual + ((posicao_alvo - posicao_atual) / 3); //Move o quadrado de 30 em 30% para a posição alvo
+    return posicao_atual + ((posicao_alvo - posicao_atual) / 5); //Move o quadrado de 30 em 30% para a posição alvo
 }
 
-// Função pra desenhar borda
+// Função para desenhar borda
 void desenhar_borda(bool estilo_pontilhado) {
     ssd1306_fill(&display, false); 
     
@@ -51,9 +77,10 @@ void desenhar_borda(bool estilo_pontilhado) {
         ssd1306_pixel(&display, WIDTH - 1, i, true); 
     }
 }
+
 // Função que converte a posição do joystick para a posição na tela
 int converter_posicao_display(int valor_joystick, int tamanho_tela) {
-    //Inversão do eixo Y
+    // Inversão do eixo Y para corresponder ao comportamento esperado do joystick
     if (tamanho_tela == HEIGHT) {
         valor_joystick = 4095 - valor_joystick;
     }
@@ -70,4 +97,3 @@ int converter_posicao_display(int valor_joystick, int tamanho_tela) {
         return tamanho_tela - TAMANHO_QUADRADO;
     return posicao;
 }
-

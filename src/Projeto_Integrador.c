@@ -5,12 +5,13 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 #include "hardware/adc.h"
+#include "hardware/i2c.h"
+#include "hardware/pio.h"
 #include "lib/ssd1306.h"
 #include "lib/font.h"
-#include "hardware/i2c.h"
 #include "lib/matriz_leds.h"
 #include "lib/buzzer.h"
-
+#include "lib/display.h"
 
 //ATRIBUIÇÃO DE PINOS
 //LEDS
@@ -25,20 +26,11 @@
 #define BUTTON_PIN_A 5   
 #define BUTTON_PIN_B 6               
 
-//CONSTANTES IMPORTANTES
-#define TAMANHO_QUADRADO 8      
-#define ENDERECO_DISPLAY 0x3C   
-#define CENTRO_JOYSTICK 2048     
-#define ZONA_MORTA 100  
-
-
 // Variáveis globais
 static volatile uint32_t last_interrupt_time_joystick = 0;  
 static volatile uint32_t last_interrupt_time_A = 0;     
 bool leds_ligados = true;       
 bool led_verde_ligado = false;  
-
-    
 
 // Função LED(PWM) - JOYSTICK
 uint16_t calcular_brilho_led(uint16_t valor_joystick) {
@@ -55,7 +47,6 @@ uint16_t calcular_brilho_led(uint16_t valor_joystick) {
 
 // Função de interrupção dos botões
 static void buttons_callback(uint gpio, uint32_t events) {
-
     uint32_t current_time = to_us_since_boot(get_absolute_time());
     
     // Callback do JOYSTICK
@@ -64,16 +55,28 @@ static void buttons_callback(uint gpio, uint32_t events) {
         led_verde_ligado = !led_verde_ligado;
         gpio_put(LED_PIN_GREEN, led_verde_ligado);
         estilo_borda = !estilo_borda;
+        printf("Estilo de borda alterado: %s\n", estilo_borda ? "Pontilhado" : "Contínuo");
     }
     // Callback botão A
     else if (gpio == BUTTON_PIN_A && current_time - last_interrupt_time_A > 200000) {
         last_interrupt_time_A = current_time;
         leds_ligados = !leds_ligados;
+        printf("LEDs %s\n", leds_ligados ? "ligados" : "desligados");
+        
+        // Mostrar o coração quando o botão A é pressionado
+        if (leds_ligados) {
+            matriz_exibir_padrao(PADRAO_CORACAO);
+        } else {
+            matriz_exibir_padrao(PADRAO_NENHUM);
+        }
     }
 }
 
 void setup() {
     stdio_init_all();
+    sleep_ms(2000); // Tempo para o terminal serial iniciar
+    
+    printf("\n\n=== Inicializando o Projeto ===\n");
     
     // Inicializa I2C 
     i2c_init(i2c1, 400000);
@@ -81,20 +84,29 @@ void setup() {
     gpio_set_function(15, GPIO_FUNC_I2C);
     gpio_pull_up(14);
     gpio_pull_up(15);
+    printf("I2C inicializado\n");
     
     // Inicializa ADC 
     adc_init();
     adc_gpio_init(JOYSTICK_PIN_X);
     adc_gpio_init(JOYSTICK_PIN_Y);
+    printf("ADC inicializado\n");
     
     // Inicializa os LEDs
     gpio_init(LED_PIN_GREEN);
     gpio_set_dir(LED_PIN_GREEN, GPIO_OUT);
     gpio_put(LED_PIN_GREEN, 0);
+    printf("LED verde inicializado\n");
 
-    //Iniciar matriz
-
-    iniciar_matriz_leds(pio, sm, led_matrix_pin);
+    // Inicializa o buzzer
+    buzzer_init(28); 
+    printf("Buzzer inicializado\n");
+    
+    // Iniciar matriz de LEDs
+    printf("Inicializando matriz de LEDs...\n");
+    iniciar_matriz_leds(pio0, 0, led_matrix_pin);
+    // NÃO exibir o coração agora - esperar pelo botão A
+    matriz_exibir_padrao(PADRAO_NENHUM);
     
     // Configura os LEDs PWM 
     gpio_set_function(LED_PIN_RED, GPIO_FUNC_PWM);
@@ -108,35 +120,44 @@ void setup() {
     
     pwm_set_enabled(slice_vermelho, true);
     pwm_set_enabled(slice_azul, true);
+    printf("LEDs PWM inicializados\n");
     
     // Inicializa os botões
     gpio_init(JOYSTICK_PIN_BTN);
     gpio_init(BUTTON_PIN_A);
+    gpio_init(BUTTON_PIN_B);
     gpio_set_dir(JOYSTICK_PIN_BTN, GPIO_IN);
     gpio_set_dir(BUTTON_PIN_A, GPIO_IN);
+    gpio_set_dir(BUTTON_PIN_B, GPIO_IN);
     gpio_pull_up(JOYSTICK_PIN_BTN);
     gpio_pull_up(BUTTON_PIN_A);
+    gpio_pull_up(BUTTON_PIN_B);
+    printf("Botões inicializados\n");
     
     // Configura as interrupções 
     gpio_set_irq_enabled_with_callback(JOYSTICK_PIN_BTN, GPIO_IRQ_EDGE_FALL, true, buttons_callback);
-    gpio_set_irq_enabled_with_callback(BUTTON_PIN_A, GPIO_IRQ_EDGE_FALL, true, buttons_callback);
+    gpio_set_irq_enabled(BUTTON_PIN_A, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(BUTTON_PIN_B, GPIO_IRQ_EDGE_FALL, true);
+    printf("Interrupções configuradas\n");
     
     // Inicializa o display
+    printf("Inicializando display SSD1306...\n");
     ssd1306_init(&display, WIDTH, HEIGHT, false, ENDERECO_DISPLAY, i2c1);
     ssd1306_config(&display);
+    printf("Display inicializado\n");
     
     // Define a posição inicial do quadrado no centro da tela
     posicao_x_atual = posicao_x_alvo = WIDTH / 2 - TAMANHO_QUADRADO / 2;
     posicao_y_atual = posicao_y_alvo = HEIGHT / 2 - TAMANHO_QUADRADO / 2;
 
-    buzzer_init(28); // ou outro GPIO que estiver usando
-
-
+    printf("Setup completo!\n");
 }
 
 int main() {
     setup();
-    sleep_ms(100);  // Pequena pausa para estabilização
+    sleep_ms(500);  // Pequena pausa para estabilização
+    
+    printf("Iniciando loop principal\n");
     
     // Loop principal
     while (true) {
@@ -144,22 +165,30 @@ int main() {
         desenhar_borda(estilo_borda);
         
         // Lê os valores do joystick
-        adc_select_input(1);
+        adc_select_input(0);  // Canal 0 para X
         uint16_t valor_x = adc_read();
-        adc_select_input(0);
+        adc_select_input(1);  // Canal 1 para Y
         uint16_t valor_y = adc_read();
         
+        // Log dos valores do joystick (apenas ocasionalmente para não sobrecarregar)
+        static int contador = 0;
+        if (++contador >= 100) {
+            printf("Joystick: X=%d, Y=%d\n", valor_x, valor_y);
+            contador = 0;
+        }
+        
         // Atualiza as posições alvo do quadrado
-        if (abs(valor_x - CENTRO_JOYSTICK) < ZONA_MORTA) {
+        // CORREÇÃO: Trocando X e Y para corrigir a inversão
+        if (abs(valor_y - CENTRO_JOYSTICK) < ZONA_MORTA) {
             posicao_x_alvo = WIDTH / 2 - TAMANHO_QUADRADO / 2;  // Centraliza se joystick parado
         } else {
-            posicao_x_alvo = converter_posicao_display(valor_x, WIDTH);
+            posicao_x_alvo = converter_posicao_display(valor_y, WIDTH);
         }
 
-        if (abs(valor_y - CENTRO_JOYSTICK) < ZONA_MORTA) {
+        if (abs(valor_x - CENTRO_JOYSTICK) < ZONA_MORTA) {
             posicao_y_alvo = HEIGHT / 2 - TAMANHO_QUADRADO / 2;  // Centraliza se joystick parado
         } else {
-            posicao_y_alvo = converter_posicao_display(valor_y, HEIGHT);
+            posicao_y_alvo = converter_posicao_display(valor_x, HEIGHT);
         }
         
         // Move quadrado 
@@ -169,7 +198,10 @@ int main() {
         // Desenha o quadrado 
         ssd1306_rect(&display, posicao_y_atual, posicao_x_atual, TAMANHO_QUADRADO, TAMANHO_QUADRADO, true, true);
         ssd1306_send_data(&display);
-        verificar_borda(posicao_x, posicao_y);
+        
+        // Verificação de borda - adicione um log para depuração
+        printf("Verificando borda: x=%d, y=%d\n", posicao_x_atual, posicao_y_atual);
+        verificar_borda(posicao_x_atual, posicao_y_atual);
 
         // Atualiza os LEDs 
         if (leds_ligados) {

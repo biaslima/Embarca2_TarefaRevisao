@@ -42,6 +42,7 @@
     "stdio.h": "c",
     "i2c.h": "c",
     "font.h": "c",
-    "matriz_leds.h": "c"
+    "matriz_leds.h": "c",
+    "ssd1306.h": "c"
   }
 }
