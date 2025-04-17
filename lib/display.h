@@ -14,7 +14,7 @@ typedef enum {
     BORDA_BAIXO
 } TipoBorda;
 
-// Variáveis globais - movidas para .c com extern aqui
+// Variáveis globais 
 extern TipoBorda ultima_borda;
 extern int posicao_x_atual;     
 extern int posicao_y_atual;     

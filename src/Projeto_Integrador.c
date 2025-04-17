@@ -8,7 +8,6 @@
 #include "hardware/i2c.h"
 #include "hardware/pio.h"
 #include "lib/ssd1306.h"
-#include "lib/font.h"
 #include "lib/matriz_leds.h"
 #include "lib/buzzer.h"
 #include "lib/display.h"
@@ -186,7 +185,7 @@ int main() {
         ssd1306_rect(&display, posicao_y_atual, posicao_x_atual, TAMANHO_QUADRADO, TAMANHO_QUADRADO, true, true);
         ssd1306_send_data(&display);
         
-        // Verificação de borda - adicione um log para depuração
+        // Verificação de borda 
         printf("Verificando borda: x=%d, y=%d\n", posicao_x_atual, posicao_y_atual);
         verificar_borda(posicao_x_atual, posicao_y_atual);
 
