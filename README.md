@@ -30,3 +30,16 @@ Criar um sistema interativo com joystick, display, matriz de LEDs e buzzer, onde
 Assista ao vídeo de funcionamento aqui: [YouTube/Drive](https://drive.google.com/file/d/SEU_VIDEO_ID/view)
 
 ## 📁 Organização
+├── src/ 
+│ └── Projeto_Integrador.c 
+├── lib/
+│ ├── buzzer.c/.h 
+│ ├── matriz_leds.c/.h 
+│ └── display.c/.h 
+├── pio/ 
+│ └── ws2812.pio 
+├── CMakeLists.txt
+
+## 👩‍💻 Autora
+**Anna Beatriz Silva Lima**  
+Feira de Santana – EmbarcaTech 2025
